@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.temporal:temporal-sdk:1.11.0'
+    implementation 'com.google.guava:guava:31.0.1-jre'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+
+    compileOnly "org.projectlombok:lombok:1.18.24"
+    annotationProcessor "org.projectlombok:lombok:1.18.24"
+    implementation 'com.stripe:stripe-java:22.6.0'
+
+    testImplementation 'io.temporal:temporal-testing:1.11.0'
+    testImplementation 'org.mockito:mockito-core:4.5.1'
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task checkout(type: JavaExec) {
+    main = 'me.mprieto.temporal.StartCheckoutWorkflow'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task checkoutWorkflowWorker(type: JavaExec) {
+    main = 'me.mprieto.temporal.workers.CheckoutWorkflowWorker'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task stripeWorker(type: JavaExec) {
+    main = 'me.mprieto.temporal.workers.StripeWorker'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task sessionWorker(type: JavaExec) {
+    main = 'me.mprieto.temporal.workers.SessionWorker'
+    classpath = sourceSets.main.runtimeClasspath
+}
