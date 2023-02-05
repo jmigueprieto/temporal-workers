@@ -34,3 +34,8 @@ To start the Stripe Worker, either run the `StripeActivityWorker` class from you
 export STRIPE_API_KEY = ${YOUR_STRIPE_API_KEY}
 ./gradlew stripeWorker
 ```
+
+**NOTES**
+
+- The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivity`.
+- The session id used to start a workflow is also just hardcoded in `StartCheckoutWorkflow`.
