@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stripe-worker
+  labels:
+    app: stripe-worker
+spec:
+  selector:
+    matchLabels:
+      app: stripe-worker
+  template:
+    metadata:
+      labels:
+        app: stripe-worker
+    spec:
+      containers:
+        - name: stripe-worker
+          image: stripe-worker
+          env:
+            - name: STRIPE_API_KEY
+              value: ${CHANGE_ME}

@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session-worker
+  labels:
+    app: session-worker
+spec:
+  selector:
+    matchLabels:
+      app: session-worker
+  template:
+    metadata:
+      labels:
+        app: session-worker
+    spec:
+      containers:
+        - name: session-worker
+          image: session-worker

@@ -1,5 +1,7 @@
 package me.mprieto.temporal.workers;
 
+import io.temporal.client.WorkflowClientOptions;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import me.mprieto.temporal.Queues;
 import me.mprieto.temporal.activities.StripeActivityImpl;
 import com.stripe.Stripe;
@@ -19,7 +21,11 @@ public class StripeWorker {
 
         Stripe.apiKey = stripeApiKey;
         // WorkflowServiceStubs is a gRPC stubs wrapper that talks to the local Docker instance of the Temporal server.
-        var service = WorkflowServiceStubs.newLocalServiceStubs();
+        var service = WorkflowServiceStubs.newServiceStubs(WorkflowServiceStubsOptions
+                .newBuilder()
+                .setTarget("192.168.68.67:7233")
+                .build());
+
         var client = WorkflowClient.newInstance(service);
         // Worker factory is used to create Workers that poll specific Task Queues.
         var factory = WorkerFactory.newInstance(client);
