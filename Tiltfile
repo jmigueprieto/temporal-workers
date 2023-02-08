@@ -1,6 +1,3 @@
-
-STRIPE_API_KEY= os.getenv("STRIPE_API_KEY")
-TEMPORAL_TARGET= os.getenv("TEMPORAL_TARGET")
 # Temporal server - this is not currently working
 docker_compose("./deploy/docker-compose-temporal.yml")
 
@@ -15,6 +12,12 @@ docker_build(
   './build/libs',
   dockerfile='./deploy/workers.dockerfile')
 
-k8s_yaml('./deploy/k8s-checkout-workflow-worker.yaml')
-k8s_yaml('./deploy/k8s-stripe-worker.yaml')
-k8s_yaml('./deploy/k8s-session-worker.yaml')
+#STRIPE_API_KEY= os.getenv("STRIPE_API_KEY")
+#TEMPORAL_TARGET= os.getenv("TEMPORAL_TARGET")
+
+yaml = helm('./deploy/charts/workers',
+         name='temporal-workers',
+#        set=['temporal.target={TEMPORAL_TARGET}', 'stripe.apiKey={STRIPE_API_KEY}']
+         values=['./values.yaml']
+         )
+k8s_yaml(yaml)

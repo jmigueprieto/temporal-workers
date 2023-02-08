@@ -1,0 +1,7 @@
+apiVersion: v2
+name: temporal-workers
+description: Temporal Workers
+
+type: application
+
+version: 0.0.1

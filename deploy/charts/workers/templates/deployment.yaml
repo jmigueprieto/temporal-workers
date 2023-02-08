@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-workflow-worker
+  labels:
+    app: checkout-workflow-worker
+spec:
+  selector:
+    matchLabels:
+      app: checkout-workflow-worker
+  template:
+    metadata:
+      labels:
+        app: checkout-workflow-worker
+    spec:
+      containers:
+        - name: checkout-workflow-worker
+          image: temporal-workers
+          command: [ "java" ]
+          env:
+            - name: TEMPORAL_TARGET
+              value: {{ .Values.temporal.target | quote }}
+          args: [ "-cp", "/app/workers.jar", "me.mprieto.temporal.workers.CheckoutWorkflowWorker", "$(TEMPORAL_TARGET)" ]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session-worker
+  labels:
+    app: session-worker
+spec:
+  selector:
+    matchLabels:
+      app: session-worker
+  template:
+    metadata:
+      labels:
+        app: session-worker
+    spec:
+      containers:
+        - name: session-worker
+          image: temporal-workers
+          command: [ "java" ]
+          env:
+            - name: TEMPORAL_TARGET
+              value: {{ .Values.temporal.target | quote }}
+          args: [ "-cp", "/app/workers.jar", "me.mprieto.temporal.workers.SessionWorker", "$(TEMPORAL_TARGET)" ]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stripe-worker
+  labels:
+    app: stripe-worker
+spec:
+  selector:
+    matchLabels:
+      app: stripe-worker
+  template:
+    metadata:
+      labels:
+        app: stripe-worker
+    spec:
+      containers:
+        - name: stripe-worker
+          image: temporal-workers
+          env:
+            - name: STRIPE_API_KEY
+              value: {{ .Values.stripe.apiKey | quote }}
+            - name: TEMPORAL_TARGET
+              value: {{ .Values.temporal.target | quote }}
+          command: [ "java" ]
+          args: [ "-cp", "/app/workers.jar", "me.mprieto.temporal.workers.StripeWorker", "$(TEMPORAL_TARGET)", "$(STRIPE_API_KEY)" ]
