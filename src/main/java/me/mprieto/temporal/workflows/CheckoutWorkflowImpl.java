@@ -24,7 +24,8 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
         var retryOptions = RetryOptions.newBuilder()
                 .setInitialInterval(Duration.ofSeconds(1))
                 .setMaximumInterval(Duration.ofSeconds(60))
-                .setMaximumAttempts(3)
+                .setBackoffCoefficient(2)
+                .setMaximumAttempts(100)
                 .build();
 
         stripeActivity = Workflow.newActivityStub(StripeActivity.class,
@@ -35,6 +36,8 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
                 new HashMap<>() {{
                     put("Charge", ActivityOptions.newBuilder()
                             .setTaskQueue(Queues.STRIPE_WORKER_QUEUE)
+                            .setStartToCloseTimeout(Duration.ofSeconds(10))
+                            .setRetryOptions(retryOptions)
                             .build());
                 }});
 
@@ -44,8 +47,6 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
                         .setRetryOptions(retryOptions)
                         .setTaskQueue(Queues.SESSION_QUEUE)
                         .build());
-
-
     }
 
     @Override
