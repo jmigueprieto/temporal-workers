@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
         - name: stripe-worker
-          image: stripe-worker
+          image: temporal-workers
+          command: [ "java" ]
+          args: [ "-cp", "/app/workers.jar", "me.mprieto.temporal.workers.StripeWorker", "$(TEMPORAL_HOST):$(TEMPORAL_PORT)" ]
           env:
             - name: STRIPE_API_KEY
-              value: ${CHANGE_ME}
+              value: "$(STRIPE_API_KEY)"

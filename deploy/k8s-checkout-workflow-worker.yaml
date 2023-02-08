@@ -15,4 +15,6 @@ spec:
     spec:
       containers:
         - name: checkout-workflow-worker
-          image: checkout-workflow-worker
+          image: temporal-workers
+          command: [ "java" ]
+          args: [ "-cp", "/app/workers.jar", "me.mprieto.temporal.workers.CheckoutWorkflowWorker", "$(TEMPORAL_HOST):$(TEMPORAL_PORT)" ]

@@ -13,26 +13,25 @@ First, make sure the [Temporal server](https://docs.temporal.io/docs/server/quic
 To start a new Checkout Workflow, either run the `StartCheckoutWorkflow` class from your IDE or from the project root run:
 
 ```bash
-./gradlew checkout
+./gradlew checkout --args="localhost:7233 session_01"
 ```
 
 To start the Checkout Workflow Worker, either run the `CheckoutWorkflowWorker` class from your IDE or from the project root run:
 
 ```bash
-./gradlew checkoutWorkflowWorker
+./gradlew checkoutWorkflowWorker --args="localhost:7233"
 ```
 
 To start the Session Worker, either run the `SessionWorker` class from your IDE or from the project root run:
 
 ```bash
-./gradlew sessionWorker
+./gradlew sessionWorker --args="localhost:7233" 
 ```
 
 To start the Stripe Worker, either run the `StripeActivityWorker` class from your IDE or from the project root run:
 
 ```bash
-export STRIPE_API_KEY = ${YOUR_STRIPE_API_KEY}
-./gradlew stripeWorker
+./gradlew stripeWorker --args="localhost:7233 ${YOUR_STRIPE_API_KEY}"
 ```
 
 **NOTES**

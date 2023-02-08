@@ -9,6 +9,7 @@ import java.util.Map;
 public class SessionActivityImpl implements SessionActivity {
 
     //TODO Remove the hardcoded sessions and add a way to add and close sessions through the console
+    //Also, this will mess up things, it's just for testing. Activities should be stateless
     private final Map<String, Session> sessions = Map.of(
             "session_01", Session.builder()
                     .status(Session.Status.OPEN)
