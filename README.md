@@ -1,67 +1,59 @@
-# Sample Temporal Workers
+# Sample Temporal Workflow and Activities
 
-This project contains a sample Checkout Workflow and related activities (to find a session and to charge with Stripe).
-
-## Build the project
-
-```shell
-./gradlew clean build
-```
-
-To generate a fat, all-in-one jar
-```shell
-./gradlew fatJar
-```
+This project contains a sample Checkout Workflow and related activities to find a session, charge with Stripe and send a receipt email.
 
 ## Running things
 
-### Manually - Gradle or IDE
+### Using Gradle
 
-First, make sure the [Temporal server](https://docs.temporal.io/docs/server/quick-install) is running.
+> **Make sure the [Temporal server](https://docs.temporal.io/docs/server/quick-install) is running!**
 
-- To start a new checkout workflow, either run the `checkout-workflow/me.mprieto.temporal.checkout.Worker` from your IDE or from the project 
-root run:
+
+#### Start a new workflow
 
 ```shell
 ./gradlew checkout-workflow:start --args="localhost:7233 ${sessionId}"
 ```
 
-**Notes**
-The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivityImpl`
-
-- To start a worker to process the workflows, either run `checkout-workflow/me.mprieto.temporal.checkout.Worker` from your IDE or from the 
-project root run:
+#### Checkout Workflow Worker
 
 ```shell
 ./gradlew checkout-workflow:worker --args="localhost:7233"
 ```
 
-- To start a Session Worker, either run `session-activity/me.mprieto.temporal.session.Worker` from your IDE or from the project root run:
+#### Session Worker
 
 ```shell
-./gradlew session-activity:worker --args="localhost:7233" 
+./gradlew session-activity:worker --args="localhost:7233 ${BASE_URL}" 
 ```
 
-- To start a Stripe Worker, either run `stripe-activity/me.mprieto.temporal.stripe.Worker` from your IDE or from the project root run:
+*`SessionActivityImpl` just makes an HTTP `GET` request to `baseURL + "session/${id}"` to get a session. I'm currently using [Wiremock Cloud](https://www.wiremock.io/) to
+simulate a "Session Service".*
+
+#### Stripe Worker
 
 ```shell
 ./gradlew stripe-activity:worker --args="localhost:7233 ${STRIPE_API_KEY}"
 ```
 
-- To start a Mailgun Worker, either run `mailgun-activity/me.mprieto.temporal.mailgun.Worker` from your IDE or from the project root run:
+#### Mailgun Worker
 
 ```shell
 ./gradlew mailgun-activity:worker --args="localhost:7233 ${BASE_URL} ${USER} ${API_KEY} ${FROM}"
 ```
 
+---
+
 ### Using Tilt
 
-You need to make sure you have Docker and a Kubernetes cluster up & running (and Tilt installed, of course)
+You need to make sure you have Docker and a Kubernetes cluster up & running (and [Tilt](https://tilt.dev/) installed, 
+of course)
 
-The `Tiltfile` uses a Helm chart to deploy the workers to a K8S cluster. 
+**Tilt takes care of spinning up a Temporal server** and uses a [Helm chart](https://helm.sh/docs/topics/charts/) to 
+deploy the workers to Kubernetes. Take a look at the `Tiltfile`.
 
-You need to set the following values in `values.yaml` at the root of the project (added to `.gitignore` to avoid 
-committing the Stripe Api key)
+You need to set the following values in `values.yaml` (added to `.gitignore` to avoid
+committing api keys) in the project's root dir: 
 
 ```yaml
 stripe:
@@ -77,7 +69,7 @@ mailgun:
   from: noreply@email.com
 ```
 
-Once you've set the above file, you can run
+Once you've set the above file, you can run:
 
 ```shell
 tilt up
