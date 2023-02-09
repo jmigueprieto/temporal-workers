@@ -23,11 +23,11 @@ First, make sure the [Temporal server](https://docs.temporal.io/docs/server/quic
 root run:
 
 ```shell
-./gradlew checkout-workflow:start --args="localhost:7233 session_01"
+./gradlew checkout-workflow:start --args="localhost:7233 ${sessionId}"
 ```
 
 **Notes**
-`session_01` is a session id. The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivityImpl`
+The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivityImpl`
 
 - To start a worker to process the workflows, either run `checkout-workflow/me.mprieto.temporal.checkout.Worker` from your IDE or from the 
 project root run:
@@ -45,7 +45,13 @@ project root run:
 - To start a Stripe Worker, either run `stripe-activity/me.mprieto.temporal.stripe.Worker` from your IDE or from the project root run:
 
 ```shell
-./gradlew stripe-activity:worker --args="localhost:7233 ${YOUR_STRIPE_API_KEY}"
+./gradlew stripe-activity:worker --args="localhost:7233 ${STRIPE_API_KEY}"
+```
+
+- To start a Mailgun Worker, either run `mailgun-activity/me.mprieto.temporal.mailgun.Worker` from your IDE or from the project root run:
+
+```shell
+./gradlew mailgun-activity:worker --args="localhost:7233 ${BASE_URL} ${USER} ${API_KEY} ${FROM}"
 ```
 
 ### Using Tilt
@@ -63,6 +69,12 @@ stripe:
 
 temporal:
     target: HOST:PORT
+
+mailgun:
+  user: api
+  apiKey: xxxx
+  baseUrl: https://api.mailgun.net/v3/sandboxd48d2d2845a5420c888b280b1554eb2b.mailgun.org/
+  from: noreply@email.com
 ```
 
 Once you've set the above file, you can run

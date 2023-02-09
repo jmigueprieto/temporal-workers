@@ -6,10 +6,3 @@ task worker(type: JavaExec) {
     main = 'me.mprieto.temporal.session.Worker'
     classpath = sourceSets.main.runtimeClasspath
 }
-
-task fatJar(type: Jar) {
-    baseName = 'session-activity-fat-jar'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}

@@ -4,20 +4,24 @@ import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 import me.mprieto.temporal.Queues;
+import me.mprieto.temporal.activities.ChargeCustomerActivity;
+import me.mprieto.temporal.activities.EmailSenderActivity;
+import me.mprieto.temporal.activities.SessionActivity;
 import me.mprieto.temporal.exceptions.CheckoutException;
-import me.mprieto.temporal.session.SessionActivity;
-import me.mprieto.temporal.session.model.Session;
-import me.mprieto.temporal.stripe.StripeActivity;
+import me.mprieto.temporal.model.email.EmailRequest;
+import me.mprieto.temporal.model.session.Session;
 
-
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.HashMap;
 
 public class CheckoutWorkflowImpl implements CheckoutWorkflow {
 
-    private final StripeActivity stripeActivity;
+    private final ChargeCustomerActivity chargeCustomerActivity;
 
     private final SessionActivity sessionActivity;
+
+    private final EmailSenderActivity emailSenderActivity;
 
     public CheckoutWorkflowImpl() {
         // retry up to 3 times with an initial interval of 1 second between retries,
@@ -29,14 +33,14 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
                 .setMaximumAttempts(100)
                 .build();
 
-        stripeActivity = Workflow.newActivityStub(StripeActivity.class,
+        chargeCustomerActivity = Workflow.newActivityStub(ChargeCustomerActivity.class,
                 ActivityOptions.newBuilder()
                         .setStartToCloseTimeout(Duration.ofSeconds(10))
                         .setRetryOptions(retryOptions)
                         .build(),
                 new HashMap<>() {{
                     put("Charge", ActivityOptions.newBuilder()
-                            .setTaskQueue(Queues.STRIPE_WORKER_QUEUE)
+                            .setTaskQueue(Queues.STRIPE_QUEUE)
                             .setStartToCloseTimeout(Duration.ofSeconds(10))
                             .setRetryOptions(retryOptions)
                             .build());
@@ -48,16 +52,26 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
                         .setRetryOptions(retryOptions)
                         .setTaskQueue(Queues.SESSION_QUEUE)
                         .build());
+
+        emailSenderActivity = Workflow.newActivityStub(EmailSenderActivity.class,
+                ActivityOptions.newBuilder()
+                        .setStartToCloseTimeout(Duration.ofSeconds(10))
+                        .setRetryOptions(retryOptions)
+                        .setTaskQueue(Queues.MAIL_QUEUE)
+                        .build());
     }
 
     @Override
     public void checkout(String sessionId) {
         var session = sessionActivity.findSessionById(sessionId);
-        // In a real workflow we should acquire a (distributed) lock over the session
-        // to avoid double charges
         if (session != null && session.getStatus() == Session.Status.OPEN) {
-            stripeActivity.charge(session.getStripeCustomerId(), session.getAmount());
+            chargeCustomerActivity.charge(session.getStripeCustomerId(), session.getAmount());
             sessionActivity.closeSession(sessionId);
+            emailSenderActivity.sendEmail(EmailRequest.builder()
+                    .to(session.getEmail())
+                    .subject(String.format("Receipt for session %s", sessionId))
+                    .text(String.format("Here's your receipt for the amount of $%s\n\nThank you!", new BigDecimal(session.getAmount()).movePointLeft(2)))
+                    .build());
         } else if (session != null) {
             throw new CheckoutException(String.format("Session '%s' is not open", sessionId));
         } else {

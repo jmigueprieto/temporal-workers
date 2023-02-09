@@ -67,9 +67,49 @@ spec:
         - name: worker-stripe-activity
           image: worker-stripe-activity
           env:
-            - name: STRIPE_API_KEY
-              value: {{ .Values.stripe.apiKey | quote }}
             - name: TEMPORAL_TARGET
               value: {{ .Values.temporal.target | quote }}
+            - name: STRIPE_API_KEY
+              value: {{ .Values.stripe.apiKey | quote }}
           command: [ "java" ]
           args: [ "-cp", "/app/stripe-worker.jar", "me.mprieto.temporal.stripe.Worker", "$(TEMPORAL_TARGET)", "$(STRIPE_API_KEY)" ]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-mailgun-activity
+  labels:
+    app: worker-mailgun-activity
+spec:
+  selector:
+    matchLabels:
+      app: worker-mailgun-activity
+  template:
+    metadata:
+      labels:
+        app: worker-mailgun-activity
+    spec:
+      containers:
+        - name: worker-mailgun-activity
+          image: worker-mailgun-activity
+          env:
+            - name: TEMPORAL_TARGET
+              value: {{ .Values.temporal.target | quote }}
+            - name: BASE_URL
+              value: {{ .Values.mailgun.baseUrl | quote }}
+            - name: USER
+              value: {{ .Values.mailgun.user | quote }}
+            - name: API_KEY
+              value: {{ .Values.mailgun.apiKey | quote }}
+            - name: FROM
+              value: {{ .Values.mailgun.from | quote }}
+          command: [ "java" ]
+          args: [ "-cp",
+                  "/app/mailgun-worker.jar",
+                  "me.mprieto.temporal.mailgun.Worker",
+                  "$(TEMPORAL_TARGET)",
+                  "$(BASE_URL)",
+                  "$(USER)",
+                  "$(API_KEY)",
+                  "$(FROM)"]

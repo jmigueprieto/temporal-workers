@@ -3,12 +3,12 @@ package me.mprieto.temporal.stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import lombok.extern.slf4j.Slf4j;
-import me.mprieto.temporal.stripe.StripeActivity;
+import me.mprieto.temporal.activities.ChargeCustomerActivity;
 
 import java.util.HashMap;
 
 @Slf4j
-public class StripeActivityImpl implements StripeActivity {
+public class StripeActivityImpl implements ChargeCustomerActivity {
 
     @Override
     public void charge(String customerId, long due) {

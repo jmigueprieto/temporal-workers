@@ -6,15 +6,19 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.failure.ApplicationFailure;
 import io.temporal.testing.TestWorkflowEnvironment;
 import me.mprieto.temporal.Queues;
+import me.mprieto.temporal.activities.EmailSenderActivity;
 import me.mprieto.temporal.checkout.CheckoutWorkflow;
 import me.mprieto.temporal.checkout.CheckoutWorkflowImpl;
 import me.mprieto.temporal.exceptions.CheckoutException;
-import me.mprieto.temporal.session.SessionActivity;
+import me.mprieto.temporal.activities.SessionActivity;
+import me.mprieto.temporal.mailgun.MailgunActivityImpl;
+import me.mprieto.temporal.model.email.EmailRequest;
 import me.mprieto.temporal.session.SessionActivityImpl;
-import me.mprieto.temporal.session.model.Session;
-import me.mprieto.temporal.stripe.StripeActivity;
+import me.mprieto.temporal.model.session.Session;
+import me.mprieto.temporal.activities.ChargeCustomerActivity;
 import me.mprieto.temporal.stripe.StripeActivityImpl;
 import org.junit.jupiter.api.*;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,9 +30,11 @@ public class CheckoutWorkflowTest {
 
     private TestWorkflowEnvironment testEnv;
 
-    private StripeActivity stripeActivityMock;
+    private ChargeCustomerActivity stripeActivityMock;
 
     private SessionActivity sessionActivity;
+
+    private EmailSenderActivity emailSenderActivity;
 
     private WorkflowClient workflowClient;
 
@@ -43,14 +49,18 @@ public class CheckoutWorkflowTest {
 //              .build();
         workflowWorker.registerWorkflowImplementationTypes(CheckoutWorkflowImpl.class);
 
-        var stripeWorker = testEnv.newWorker(Queues.STRIPE_WORKER_QUEUE);
+        var stripeWorker = testEnv.newWorker(Queues.STRIPE_QUEUE);
         var sessionWorker = testEnv.newWorker(Queues.SESSION_QUEUE);
+        var emailSenderWorker = testEnv.newWorker(Queues.MAIL_QUEUE);
 
         sessionActivity = new SessionActivityImpl();
         sessionWorker.registerActivitiesImplementations(sessionActivity);
 
         stripeActivityMock = mock(StripeActivityImpl.class);
         stripeWorker.registerActivitiesImplementations(stripeActivityMock);
+
+        emailSenderActivity = mock(MailgunActivityImpl.class);
+        emailSenderWorker.registerActivitiesImplementations(emailSenderActivity);
 
         testEnv.start();
     }
@@ -75,6 +85,12 @@ public class CheckoutWorkflowTest {
 
         workflow.checkout(sessionId);
         verify(stripeActivityMock).charge(eq("cus_IzssscT57x9e8K"), eq(79700L));
+        var argument = ArgumentCaptor.forClass(EmailRequest.class);
+        verify(emailSenderActivity).sendEmail(argument.capture());
+        assertNull(argument.getValue().getFrom());
+        assertEquals("someone@mail.com", argument.getValue().getTo());
+        assertEquals("Receipt for session session_01", argument.getValue().getSubject());
+        assertEquals("Here's your receipt for the amount of $797.00\n\nThank you!", argument.getValue().getText());
 
         var sessionAfterCheckout = sessionActivity.findSessionById(sessionId);
         assertEquals(Session.Status.CLOSED, sessionAfterCheckout.getStatus());

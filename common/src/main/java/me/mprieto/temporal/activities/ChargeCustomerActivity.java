@@ -1,10 +1,10 @@
-package me.mprieto.temporal.stripe;
+package me.mprieto.temporal.activities;
 
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
 @ActivityInterface
-public interface StripeActivity {
+public interface ChargeCustomerActivity {
 
     /**
      * Charges the customer the due amount.

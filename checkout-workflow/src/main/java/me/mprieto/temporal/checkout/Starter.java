@@ -20,17 +20,17 @@ public class Starter {
                 .setTarget(args[0])
                 .build());
 
+        var sessionId = args[1];
         var options = WorkflowOptions.newBuilder()
                 .setTaskQueue(Queues.CHECKOUT_WF_QUEUE)
                 // Workflow id to use when starting Prevents duplicate instances.
-                //.setWorkflowId("checkout-session-123")
+                .setWorkflowId(sessionId)
                 .build();
         // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
         var client = WorkflowClient.newInstance(service);
         // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform an RPC.
         var workflow = client.newWorkflowStub(CheckoutWorkflow.class, options);
         // Asynchronous execution. This process will exit after making this call.
-        var sessionId = args[1];
         var we = WorkflowClient.start(workflow::checkout, sessionId);
         System.out.printf("\nCheckout session: %s", sessionId);
         System.out.printf("\nWorkflowID: %s RunID: %s", we.getWorkflowId(), we.getRunId());

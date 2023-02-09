@@ -1,8 +1,8 @@
 package me.mprieto.temporal.session;
 
 import lombok.extern.slf4j.Slf4j;
-import me.mprieto.temporal.session.SessionActivity;
-import me.mprieto.temporal.session.model.Session;
+import me.mprieto.temporal.activities.SessionActivity;
+import me.mprieto.temporal.model.session.Session;
 
 import java.util.Map;
 
@@ -15,6 +15,7 @@ public class SessionActivityImpl implements SessionActivity {
             "session_01", Session.builder()
                     .status(Session.Status.OPEN)
                     .stripeCustomerId("cus_IzssscT57x9e8K")
+                    .email("someone@mail.com")
                     .amount(79700)
                     .build(),
             "session_02", Session.builder()

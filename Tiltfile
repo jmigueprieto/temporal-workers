@@ -34,17 +34,31 @@ local_resource('gradle-build-stripe-activity',
             'build.gradle'
          ])
 
+local_resource('gradle-build-mailgun-activity',
+    './gradlew mailgun-activity:fatJar -x test',
+    deps=[
+            'mailgun-activity/src',
+            'mailgun-activity/build.gradle',
+            'common/src',
+            'common/build.gradle',
+            'build.gradle'
+         ])
+
 docker_build('worker-checkout-workflow',
     './checkout-workflow/build/libs',
     dockerfile='./deploy/checkout-workflow/worker.dockerfile')
+
+docker_build('worker-session-activity',
+    './session-activity/build/libs',
+    dockerfile='./deploy/session-activity/worker.dockerfile')
 
 docker_build('worker-stripe-activity',
     './stripe-activity/build/libs',
     dockerfile='./deploy/stripe-activity/worker.dockerfile')
 
-docker_build('worker-session-activity',
-    './session-activity/build/libs',
-    dockerfile='./deploy/session-activity/worker.dockerfile')
+docker_build('worker-mailgun-activity',
+    './mailgun-activity/build/libs',
+    dockerfile='./deploy/mailgun-activity/worker.dockerfile')
 
 yaml = helm('./deploy/charts/workers',
     name='temporal-workers',

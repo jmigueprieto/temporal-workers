@@ -4,4 +4,6 @@ include 'common'
 include 'checkout-workflow'
 include 'session-activity'
 include 'stripe-activity'
+include 'mailgun-activity'
 include 'tests'
+

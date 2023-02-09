@@ -1,6 +1,6 @@
-package me.mprieto.temporal.session;
+package me.mprieto.temporal.activities;
 
-import me.mprieto.temporal.session.model.Session;
+import me.mprieto.temporal.model.session.Session;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 

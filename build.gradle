@@ -27,4 +27,11 @@ subprojects { subproject ->
     test {
         useJUnitPlatform()
     }
+
+    task fatJar(type: Jar) {
+        baseName = subproject.name + '-fat-jar'
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+    }
 }

@@ -1,4 +1,4 @@
-package me.mprieto.temporal.session.model;
+package me.mprieto.temporal.model.session;
 
 
 import lombok.AllArgsConstructor;
@@ -20,6 +20,8 @@ public class Session {
     private Status status = Status.OPEN;
 
     private String stripeCustomerId;
+
+    private String email;
 
     private long amount;
 }
