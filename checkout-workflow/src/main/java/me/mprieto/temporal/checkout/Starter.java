@@ -1,5 +1,6 @@
 package me.mprieto.temporal.checkout;
 
+import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
@@ -25,6 +26,7 @@ public class Starter {
                 .setTaskQueue(Queues.CHECKOUT_WF_QUEUE)
                 // Workflow id to use when starting Prevents duplicate instances.
                 .setWorkflowId(sessionId)
+                .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
                 .build();
         // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
         var client = WorkflowClient.newInstance(service);

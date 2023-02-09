@@ -1,36 +1,34 @@
-package me.mprieto.temporal.workflows;
+package me.mprieto.temporal.checkout;
 
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.failure.ApplicationFailure;
 import io.temporal.testing.TestWorkflowEnvironment;
+import io.temporal.worker.WorkflowImplementationOptions;
 import me.mprieto.temporal.Queues;
-import me.mprieto.temporal.activities.EmailSenderActivity;
-import me.mprieto.temporal.checkout.CheckoutWorkflow;
-import me.mprieto.temporal.checkout.CheckoutWorkflowImpl;
-import me.mprieto.temporal.exceptions.CheckoutException;
-import me.mprieto.temporal.activities.SessionActivity;
-import me.mprieto.temporal.mailgun.MailgunActivityImpl;
-import me.mprieto.temporal.model.email.EmailRequest;
-import me.mprieto.temporal.session.SessionActivityImpl;
-import me.mprieto.temporal.model.session.Session;
 import me.mprieto.temporal.activities.ChargeCustomerActivity;
-import me.mprieto.temporal.stripe.StripeActivityImpl;
-import org.junit.jupiter.api.*;
+import me.mprieto.temporal.activities.EmailSenderActivity;
+import me.mprieto.temporal.activities.SessionActivity;
+import me.mprieto.temporal.exceptions.CheckoutException;
+import me.mprieto.temporal.model.email.EmailRequest;
+import me.mprieto.temporal.model.session.Session;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 public class CheckoutWorkflowTest {
 
     private TestWorkflowEnvironment testEnv;
 
-    private ChargeCustomerActivity stripeActivityMock;
+    private ChargeCustomerActivity chargeCustomerActivity;
 
     private SessionActivity sessionActivity;
 
@@ -44,22 +42,22 @@ public class CheckoutWorkflowTest {
         workflowClient = testEnv.getWorkflowClient();
 
         var workflowWorker = testEnv.newWorker(Queues.CHECKOUT_WF_QUEUE);
-//      var workflowImplementationOptions = WorkflowImplementationOptions.newBuilder()
-//              .setFailWorkflowExceptionTypes(CheckoutException.class)
-//              .build();
-        workflowWorker.registerWorkflowImplementationTypes(CheckoutWorkflowImpl.class);
+        var workflowImplementationOptions = WorkflowImplementationOptions.newBuilder()
+                .setFailWorkflowExceptionTypes(CheckoutException.class)
+                .build();
+        workflowWorker.registerWorkflowImplementationTypes(workflowImplementationOptions, CheckoutWorkflowImpl.class);
 
         var stripeWorker = testEnv.newWorker(Queues.STRIPE_QUEUE);
         var sessionWorker = testEnv.newWorker(Queues.SESSION_QUEUE);
         var emailSenderWorker = testEnv.newWorker(Queues.MAIL_QUEUE);
 
-        sessionActivity = new SessionActivityImpl();
+        sessionActivity = mock(SessionActivity.class, withSettings().withoutAnnotations());
         sessionWorker.registerActivitiesImplementations(sessionActivity);
 
-        stripeActivityMock = mock(StripeActivityImpl.class);
-        stripeWorker.registerActivitiesImplementations(stripeActivityMock);
+        chargeCustomerActivity = mock(ChargeCustomerActivity.class, withSettings().withoutAnnotations());
+        stripeWorker.registerActivitiesImplementations(chargeCustomerActivity);
 
-        emailSenderActivity = mock(MailgunActivityImpl.class);
+        emailSenderActivity = mock(EmailSenderActivity.class, withSettings().withoutAnnotations());
         emailSenderWorker.registerActivitiesImplementations(emailSenderActivity);
 
         testEnv.start();
@@ -80,20 +78,25 @@ public class CheckoutWorkflowTest {
                 CheckoutWorkflow.class, options);
 
         var sessionId = "session_01";
-        var sessionBeforeCheckout = sessionActivity.findSessionById(sessionId);
-        assertEquals(Session.Status.OPEN, sessionBeforeCheckout.getStatus());
+        when(sessionActivity.findSessionById(sessionId)).thenReturn(Session.builder()
+                .status(Session.Status.OPEN)
+                .stripeCustomerId("cus_IzssscT57x9e8K")
+                .email("someone@mail.com")
+                .amount(79700)
+                .build());
 
         workflow.checkout(sessionId);
-        verify(stripeActivityMock).charge(eq("cus_IzssscT57x9e8K"), eq(79700L));
+
+        verify(sessionActivity, times(1)).findSessionById(eq("session_01"));
+        verify(chargeCustomerActivity, times(1)).charge(eq("cus_IzssscT57x9e8K"), eq(79700L));
+
         var argument = ArgumentCaptor.forClass(EmailRequest.class);
-        verify(emailSenderActivity).sendEmail(argument.capture());
+        verify(emailSenderActivity, times(1)).sendEmail(argument.capture());
+
         assertNull(argument.getValue().getFrom());
         assertEquals("someone@mail.com", argument.getValue().getTo());
         assertEquals("Receipt for session session_01", argument.getValue().getSubject());
         assertEquals("Here's your receipt for the amount of $797.00\n\nThank you!", argument.getValue().getText());
-
-        var sessionAfterCheckout = sessionActivity.findSessionById(sessionId);
-        assertEquals(Session.Status.CLOSED, sessionAfterCheckout.getStatus());
     }
 
     @Test
@@ -106,10 +109,7 @@ public class CheckoutWorkflowTest {
         var workflow = workflowClient.newWorkflowStub(
                 CheckoutWorkflow.class, options);
 
-        var sessionId = "session_X";
-        var session = sessionActivity.findSessionById(sessionId);
-        assertNull(session);
-
+        var sessionId = "session_01";
         var thrown = assertThrows(WorkflowFailedException.class, () -> workflow.checkout(sessionId));
 
         var appFailure = (ApplicationFailure) thrown.getCause();
@@ -128,9 +128,12 @@ public class CheckoutWorkflowTest {
                 CheckoutWorkflow.class, options);
 
         var sessionId = "session_01";
-        var session = sessionActivity.findSessionById(sessionId);
-        assertNotNull(session);
-        session.setStatus(Session.Status.CLOSED);
+        when(sessionActivity.findSessionById(sessionId)).thenReturn(Session.builder()
+                .status(Session.Status.CLOSED)
+                .stripeCustomerId("cus_IzssscT57x9e8K")
+                .email("someone@mail.com")
+                .amount(79700)
+                .build());
 
         var thrown = assertThrows(WorkflowFailedException.class, () -> workflow.checkout(sessionId));
 

@@ -4,7 +4,9 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkflowImplementationOptions;
 import me.mprieto.temporal.Queues;
+import me.mprieto.temporal.exceptions.CheckoutException;
 
 public class Worker {
 
@@ -25,7 +27,11 @@ public class Worker {
         var factory = WorkerFactory.newInstance(client);
         var worker = factory.newWorker(Queues.CHECKOUT_WF_QUEUE);
         // Workflows are stateful so a type is needed to create instances.
-        worker.registerWorkflowImplementationTypes(CheckoutWorkflowImpl.class);
+
+        var workflowImplementationOptions = WorkflowImplementationOptions.newBuilder()
+                .setFailWorkflowExceptionTypes(CheckoutException.class)
+                .build();
+        worker.registerWorkflowImplementationTypes(workflowImplementationOptions, CheckoutWorkflowImpl.class);
         // Start listening to the Task Queue.
         factory.start();
     }

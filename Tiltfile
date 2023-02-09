@@ -60,6 +60,7 @@ docker_build('worker-mailgun-activity',
     './mailgun-activity/build/libs',
     dockerfile='./deploy/mailgun-activity/worker.dockerfile')
 
+#TODO make the workers deployment wait until HOST:PORT is available
 yaml = helm('./deploy/charts/workers',
     name='temporal-workers',
     values=['./values.yaml'])

@@ -45,7 +45,9 @@ spec:
           env:
             - name: TEMPORAL_TARGET
               value: {{ .Values.temporal.target | quote }}
-          args: [ "-cp", "/app/session-worker.jar", "me.mprieto.temporal.session.Worker", "$(TEMPORAL_TARGET)" ]
+            - name: BASE_URL
+              value: {{ .Values.sessions.baseUrl | quote }}
+          args: [ "-cp", "/app/session-worker.jar", "me.mprieto.temporal.session.Worker", "$(TEMPORAL_TARGET)", "$(BASE_URL)" ]
 
 ---
 apiVersion: apps/v1

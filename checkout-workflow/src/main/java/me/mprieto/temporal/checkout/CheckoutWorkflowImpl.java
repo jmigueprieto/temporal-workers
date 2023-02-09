@@ -30,7 +30,7 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
                 .setInitialInterval(Duration.ofSeconds(1))
                 .setMaximumInterval(Duration.ofSeconds(60))
                 .setBackoffCoefficient(2)
-                .setMaximumAttempts(100)
+                .setMaximumAttempts(10)
                 .build();
 
         chargeCustomerActivity = Workflow.newActivityStub(ChargeCustomerActivity.class,

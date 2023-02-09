@@ -1,7 +1,0 @@
-dependencies {
-    testImplementation project(':common')
-    testImplementation project(':checkout-workflow')
-    testImplementation project(':session-activity')
-    testImplementation project(':stripe-activity')
-    testImplementation project(':mailgun-activity')
-}
