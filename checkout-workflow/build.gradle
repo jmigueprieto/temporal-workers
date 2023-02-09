@@ -1,0 +1,21 @@
+
+dependencies {
+    implementation project(':common')
+}
+
+task worker(type: JavaExec) {
+    main = 'me.mprieto.temporal.checkout.Worker'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task start(type: JavaExec) {
+    main = 'me.mprieto.temporal.checkout.Starter'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task fatJar(type: Jar) {
+    baseName = 'checkout-workflow-fat-jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

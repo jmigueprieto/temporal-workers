@@ -1,0 +1,16 @@
+dependencies {
+    implementation project(':common')
+    implementation 'com.stripe:stripe-java:22.6.0'
+}
+
+task worker(type: JavaExec) {
+    main = 'me.mprieto.temporal.stripe.Worker'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task fatJar(type: Jar) {
+    baseName = 'stripe-activity-fat-jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

@@ -1,6 +1,8 @@
-## Build the project
+# Sample Temporal Workers
 
-Either open the project in your IDE and build it or in the project's root directory run:
+This project contains a sample Checkout Workflow and related activities (to find a session and to charge with Stripe).
+
+## Build the project
 
 ```shell
 ./gradlew clean build
@@ -17,38 +19,38 @@ To generate a fat, all-in-one jar
 
 First, make sure the [Temporal server](https://docs.temporal.io/docs/server/quick-install) is running.
 
-- To start a new Checkout Workflow, either run the `StartCheckoutWorkflow` class from your IDE or from the project 
+- To start a new checkout workflow, either run the `checkout-workflow/me.mprieto.temporal.checkout.Worker` from your IDE or from the project 
 root run:
 
 ```shell
-./gradlew checkout --args="localhost:7233 session_01"
+./gradlew checkout-workflow:start --args="localhost:7233 session_01"
 ```
 
 **Notes**
-`session_01` is a session id. The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivity`
+`session_01` is a session id. The sessions are just hardcoded (and the Stripe customer id in them) in `SessionActivityImpl`
 
-- To start the Checkout Workflow Worker, either run the `CheckoutWorkflowWorker` class from your IDE or from the 
+- To start a worker to process the workflows, either run `checkout-workflow/me.mprieto.temporal.checkout.Worker` from your IDE or from the 
 project root run:
 
 ```shell
-./gradlew checkoutWorkflowWorker --args="localhost:7233"
+./gradlew checkout-workflow:worker --args="localhost:7233"
 ```
 
-- To start the Session Worker, either run the `SessionWorker` class from your IDE or from the project root run:
+- To start a Session Worker, either run `session-activity/me.mprieto.temporal.session.Worker` from your IDE or from the project root run:
 
 ```shell
-./gradlew sessionWorker --args="localhost:7233" 
+./gradlew session-activity:worker --args="localhost:7233" 
 ```
 
-- To start the Stripe Worker, either run the `StripeActivityWorker` class from your IDE or from the project root run:
+- To start a Stripe Worker, either run `stripe-activity/me.mprieto.temporal.stripe.Worker` from your IDE or from the project root run:
 
 ```shell
-./gradlew stripeWorker --args="localhost:7233 ${YOUR_STRIPE_API_KEY}"
+./gradlew stripe-activity:worker --args="localhost:7233 ${YOUR_STRIPE_API_KEY}"
 ```
 
 ### Using Tilt
 
-You need to make sure you have Docker up & running and a Kubernetes cluster (and Tilt installed, of course)
+You need to make sure you have Docker and a Kubernetes cluster up & running (and Tilt installed, of course)
 
 The `Tiltfile` uses a Helm chart to deploy the workers to a K8S cluster. 
 
