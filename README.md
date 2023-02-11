@@ -59,16 +59,22 @@ committing api keys) in the project's root dir:
 
 ```yaml
 stripe:
-  apiKey: sk_test_xxxxx
+  apiKey: {CHANGE_ME}
 
 temporal:
-    target: HOST:PORT
+    target: ${HOST}:${PORT}
 
 mailgun:
   user: api
-  apiKey: xxxx
-  baseUrl: https://api.mailgun.net/v3/sandboxd48d2d2845a5420c888b280b1554eb2b.mailgun.org/
-  from: noreply@email.com
+  apiKey: {CHANGE_ME}
+  baseUrl: https://api.mailgun.net/v3/{CHANGE_ME}/
+  from: {CHANGE_ME}
+
+sessions:
+  baseUrl: https://{CHANGE_ME}.wiremockapi.cloud/
+
+split:
+  apiToken: {CHANGE_ME}
 ```
 
 Once you've set the above file, you can run:
