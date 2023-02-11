@@ -1,10 +1,7 @@
 package me.mprieto.temporal.model.session;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Builder
 @Data
@@ -19,8 +16,13 @@ public class Session {
     @Builder.Default
     private Status status = Status.OPEN;
 
+    @NonNull
+    private String userId;
+
+    @NonNull
     private String stripeCustomerId;
 
+    @NonNull
     private String email;
 
     private long amount;

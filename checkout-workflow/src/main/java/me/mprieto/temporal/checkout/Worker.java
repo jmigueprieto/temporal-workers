@@ -26,11 +26,10 @@ public class Worker {
         // Worker factory is used to create Workers that poll specific Task Queues.
         var factory = WorkerFactory.newInstance(client);
         var worker = factory.newWorker(Queues.CHECKOUT_WF_QUEUE);
-        // Workflows are stateful so a type is needed to create instances.
-
         var workflowImplementationOptions = WorkflowImplementationOptions.newBuilder()
                 .setFailWorkflowExceptionTypes(CheckoutException.class)
                 .build();
+        // Workflows are stateful so a type is needed to create instances.
         worker.registerWorkflowImplementationTypes(workflowImplementationOptions, CheckoutWorkflowImpl.class);
         // Start listening to the Task Queue.
         factory.start();

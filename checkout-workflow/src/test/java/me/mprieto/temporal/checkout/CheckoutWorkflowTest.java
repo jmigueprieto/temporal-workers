@@ -80,6 +80,7 @@ public class CheckoutWorkflowTest {
         var sessionId = "session_01";
         when(sessionActivity.findSessionById(sessionId)).thenReturn(Session.builder()
                 .status(Session.Status.OPEN)
+                .userId("c26fadc0-1965-4b4e-8e69-f1af53192d06")
                 .stripeCustomerId("cus_IzssscT57x9e8K")
                 .email("someone@mail.com")
                 .amount(79700)
@@ -130,6 +131,7 @@ public class CheckoutWorkflowTest {
         var sessionId = "session_01";
         when(sessionActivity.findSessionById(sessionId)).thenReturn(Session.builder()
                 .status(Session.Status.CLOSED)
+                .userId("c26fadc0-1965-4b4e-8e69-f1af53192d06")
                 .stripeCustomerId("cus_IzssscT57x9e8K")
                 .email("someone@mail.com")
                 .amount(79700)

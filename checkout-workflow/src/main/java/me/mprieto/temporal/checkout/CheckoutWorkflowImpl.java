@@ -69,6 +69,7 @@ public class CheckoutWorkflowImpl implements CheckoutWorkflow {
             sessionActivity.closeSession(sessionId);
             emailSenderActivity.sendEmail(EmailRequest.builder()
                     .to(session.getEmail())
+                    .userId(session.getUserId())
                     .subject(String.format("Receipt for session %s", sessionId))
                     .text(String.format("Here's your receipt for the amount of $%s\n\nThank you!", new BigDecimal(session.getAmount()).movePointLeft(2)))
                     .build());

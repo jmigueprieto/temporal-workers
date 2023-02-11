@@ -106,6 +106,8 @@ spec:
               value: {{ .Values.mailgun.apiKey | quote }}
             - name: FROM
               value: {{ .Values.mailgun.from | quote }}
+            - name: SPLIT_IO_API_TOKEN
+              value: {{ .Values.split.apiToken | quote }}
           command: [ "java" ]
           args: [ "-cp",
                   "/app/mailgun-worker.jar",
@@ -114,4 +116,5 @@ spec:
                   "$(BASE_URL)",
                   "$(USER)",
                   "$(API_KEY)",
-                  "$(FROM)"]
+                  "$(FROM)",
+                  "$(SPLIT_IO_API_TOKEN)"]

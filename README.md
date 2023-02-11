@@ -39,8 +39,10 @@ simulate a "Session Service".*
 #### Mailgun Worker
 
 ```shell
-./gradlew mailgun-activity:worker --args="localhost:7233 ${BASE_URL} ${USER} ${API_KEY} ${FROM}"
+./gradlew mailgun-activity:worker --args="localhost:7233 ${MAILGUN_BASE_URL} ${MAILGUN_USER} ${MAILGUN_API_KEY} ${FROM} ${SPLIT_IO_API_TOKEN}"
 ```
+
+*`FROM` is a default email, e.g.: noreply@mydomain.com.*
 
 ---
 

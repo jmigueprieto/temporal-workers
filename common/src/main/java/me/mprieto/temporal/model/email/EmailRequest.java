@@ -11,6 +11,8 @@ import lombok.*;
 public class EmailRequest {
     private String from;
     @NonNull
+    private String userId;
+    @NonNull
     private String to;
     @NonNull
     private String subject;
